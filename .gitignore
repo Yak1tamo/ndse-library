@@ -2,3 +2,4 @@ node_modules/
 doc/**/*.txt
 .env
 config.js
+public
