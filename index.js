@@ -1,14 +1,20 @@
 const express = require('express')
+const books = require('./routes/site')
+const api = require('./routes/api/book')
+const index = require('./routes/index')
 const login = require('./routes/login')
-const books = require('./routes/books')
 const error404 = require('./middleware/err-404')
 
 const app = express()
 app.use(express.json())
-
+app.use(express.urlencoded({extended: true}));
+app.set("view engine", "ejs");
 app.use('/public', express.static(__dirname+'/public'))
+
+app.use('/', index)
 app.use('/api/user/login', login)
-app.use('/api/books', books)
+app.use('/api/books', api)
+app.use('/books', books)
 app.use(error404)
 
 const PORT = process.env.PORT || 3000

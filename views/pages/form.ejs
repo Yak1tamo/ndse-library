@@ -1,0 +1,72 @@
+<form enctype="multipart/form-data" method="POST" class="mt-5">
+	<div class="form-group">
+		<label for="inputTitle">Title</label>
+		<input type="text"
+			value="<%= book.title %>"
+			name="title"
+			class="form-control"
+			id="inputTitle">
+	</div>
+
+	<div class="form-group">
+			<label for="inputDesc">Description</label>
+			<textarea
+							rows="3"
+							name="desc"
+							class="form-control"
+							id="inputDesc"
+			><%= book.desc %></textarea>
+	</div>
+	<div class="form-group">
+			<label for="inputAuthors">Authors</label>
+			<input
+							name="authors"
+							class="form-control"
+							id="inputAuthors"
+							value="<%= book.authors %>">
+	</div>
+	<div class="form-group">
+			<label for="inputfavorite">Favorite</label>
+			<input
+							name="favorite"
+							class="form-control"
+							id="inputfavorite"
+							value="<%= book.favorite %>">
+	</div>
+	<div class="form-group">
+			<label for="inputfileCover">fileCover</label>
+			<input
+							name="fileCover"
+							class="form-control"
+							id="inputfileCover"
+							value="<%= book.fileCover %>">
+	</div>
+	<div class="form-group">
+			<label for="inputfileName">fileName</label>
+			<input
+							name="fileName"
+							class="form-control"
+							id="inputfileName"
+							value="<%= book.fileName %>">
+	</div>
+	<div class="form-group mb-3">
+			<label for="formFile" class="form-label">fileBook</label>
+			<input
+							type="file"
+							name="fileBook"
+							class="form-control-file"
+							id="formFile"
+							value="<%= book.fileBook %>">
+	</div>
+	<div class="form-group text-right ">
+			<button type="submit" class="btn btn-primary">Save</button>
+	</div>
+</form>
+<!-- this.title = title
+		this.desc = desc
+		this.authors = authors
+		this.favorite = favorite
+		this.fileCover = fileCover
+		this.fileName = fileName
+		this.fileBook = fileBook
+		this.id = id -->

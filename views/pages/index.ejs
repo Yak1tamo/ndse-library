@@ -1,0 +1,44 @@
+<%- include('../port/layout-start', {title: title}) %>
+
+<h1><%= title %></h1>
+<a class="btn btn-sm btn-primary" href="/books/create">Add book</a>
+
+<% if(lib.length) { %>
+	<table class="table table-striped table-sm  mt-3">
+		<thead>
+			<tr>
+				<th scope="col">#</th>
+				<th scope="col">title</th>
+				<th scope="col">authors</th>
+				<th scope="col"></th>
+			</tr>
+		</thead>
+		<tbody>
+			<% lib.map((el, idx) => {  %>
+			<tr>
+				<td scope="row"><%= idx +1 %></td>
+				<td><%= el.title %></td>
+				<td><%= el.authors %></td>
+				<td class="text-right">
+					<a class="btn btn-sm btn-success" href="/books/<%= el.id %>">
+						<i class="fa fa-eye" aria-hidden="true"></i>
+				</a>
+				<a class="btn btn-sm btn-primary" href="/books/update/<%= el.id %>">
+						<i class="fa fa-pencil" aria-hidden="true"></i>
+				</a>
+				<form action="/books/delete/<%= el.id %>" method="POST" class="d-inline">
+						<button class="btn btn-sm btn-danger">
+								<i class="fa fa-trash" aria-hidden="true"></i>
+						</button>
+				</form>
+				</td>
+			</tr>
+		<% }) %>
+
+		</tbody>
+	</table>
+<% } else { %>
+	<h3 class="mt-5">Библиотека пуста</h3>
+<% } %>
+
+<%- include('../port/layout-end') %>

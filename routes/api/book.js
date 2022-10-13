@@ -1,15 +1,15 @@
 const express = require('express')
 const router = express.Router()
-const Book = require('../models/book')
-const fileMulter = require('../middleware/file')
+const Book = require('../../models/book')
+const fileMulter = require('../../middleware/file')
 const path = require('path')
 
-const stor = {
-	library: [
-		new Book(),
-		new Book(),
-	],
-};
+// const stor = {
+// 	library: [
+// 		new Book('title1', 'desc1', 'auth1', 'favor1', 'filecover1', 'fileName1'),
+// 		new Book('title2', 'desc2', 'auth2', 'favor2', 'filecover2', 'fileName2'),
+// 	],
+// };
 
 // Получить все книги
 router.get('/', (req, res) => {
@@ -78,7 +78,7 @@ router.get('/:id/download', (req, res) => {
 	const { id } = req.params
 	const idx = library.findIndex(el => el.id === id)
 	if (idx !== -1) {
-		res.download(path.join(__dirname, '/../', 'public/stor/', library[idx].fileBook))
+		res.download(path.join(__dirname, '/../', 'public/stor/', library[idx].fileBook), library[idx].fileName)
 	} else {
 		next()
 	}
