@@ -6,10 +6,11 @@ const login = require('./routes/login')
 const error404 = require('./middleware/err-404')
 
 const app = express()
+
+app.use('/public', express.static(__dirname+'/public'))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-app.use('/public', express.static(__dirname+'/public'))
 
 app.use('/', index)
 app.use('/api/user/login', login)

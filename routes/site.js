@@ -51,7 +51,6 @@ router.post('/create', fileMulter.single('fileBook'), (req, res) => {
 	const { library } = stor
 	const { title, desc, authors, favorite, fileCover, fileName} = req.body
 	const fileBook = req.file ? req.file.path : ''
-
 	const newBook = new Book(title, desc, authors, favorite, fileCover, fileName, fileBook)
 	library.push(newBook)
 
@@ -81,13 +80,16 @@ router.post('/update/:id', fileMulter.single('fileBook'), (req, res, next) => {
 	const fileBook = req.file ? req.file.path : ''
 	const { id } = req.params
 	const idx = library.findIndex(el => el.id === id)
-
+	if (idx !== -1) {
 		library[idx] = {
 			...library[idx],
 			...body,
 			fileBook
 		}
 		res.redirect('/books')
+	} else {
+		next()
+	}
 })
 
 // Удалить кнлигу по ID
@@ -95,18 +97,9 @@ router.post('/delete/:id', (req, res, next) => {
 	const { library } = stor
 	const { id } = req.params
 	const idx = library.findIndex(el => el.id === id)
-
-	library.splice(idx, 1)
-	res.redirect('/books')
-})
-
-// Скачать книгу
-router.get('/:id/download', (req, res) => {
-	const { library } = stor
-	const { id } = req.params
-	const idx = library.findIndex(el => el.id === id)
 	if (idx !== -1) {
-		res.download(path.join(__dirname, '/../', 'public/stor/', library[idx].fileBook), library[idx].fileName)
+		library.splice(idx, 1)
+		res.redirect('/books')
 	} else {
 		next()
 	}
