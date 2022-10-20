@@ -78,7 +78,7 @@ router.get('/:id/download', (req, res) => {
 	const { id } = req.params
 	const idx = library.findIndex(el => el.id === id)
 	if (idx !== -1) {
-		res.download(path.join(__dirname, '/../', 'public/stor/', library[idx].fileBook), library[idx].fileName)
+		res.download(path.join(__dirname, '/../../../', 'public/stor/', library[idx].fileBook), library[idx].fileName)
 	} else {
 		next()
 	}

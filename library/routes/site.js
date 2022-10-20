@@ -4,6 +4,7 @@ const Book = require('../models/book')
 const fileMulter = require('../middleware/file')
 const path = require('path')
 const { title } = require('process')
+const http = require('http')
 
 const stor = {
 	library: [
@@ -27,12 +28,41 @@ router.get('/:id', (req, res, next) => {
 	const title = 'Book'
 	const { library } = stor
 	const { id } = req.params
+	let counter
+
+	const optionsInc = {
+		host: 'counter',
+		path: `/counter/${id}/incr`,
+		port: 3001,
+		method: 'POST',
+	}
+	const options = {
+		host: 'counter',
+		path: `/counter/${id}`,
+		port: 3001,
+	}
+
 	const idx = library.findIndex(el => el.id === id)
 	if (idx !== -1) {
-		res.render('pages/view', {
-			title: title,
-			lib: library[idx],
-		})
+		async function f() {
+			const r = http.request(optionsInc, (res) => {})
+			r.end()
+		}
+
+		f().then(http.get(options, (response) => {
+			let str = ''
+			response.on('data', (chunk) => {
+				str += chunk
+			});
+			response.on('end', () => {
+				counter = JSON.parse(str).count || 0
+				res.render('pages/view', {
+					title: title,
+					lib: library[idx],
+					counter: ++counter,
+				})
+			})
+		}))
 	} else {
 		next()
 	}
