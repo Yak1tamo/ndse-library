@@ -9,7 +9,6 @@ const stor = {}
 
 app.post('/counter/:bookId/incr', (req, res) => {
 	const { bookId } = req.params
-
 	fs.readFile(
 		path.join(__dirname, 'data', 'data.json'),
 		'utf-8',
@@ -24,7 +23,6 @@ app.post('/counter/:bookId/incr', (req, res) => {
 					JSON.stringify(book),
 					(err) => {
 						if(err) throw err
-						res.end()
 					}
 				)
 			}

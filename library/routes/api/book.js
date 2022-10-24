@@ -1,73 +1,76 @@
 const express = require('express')
 const router = express.Router()
-const Book = require('../../models/book')
+const Book = require('../../models/bookdb')
 const fileMulter = require('../../middleware/file')
 const path = require('path')
 
-// const stor = {
-// 	library: [
-// 		new Book('title1', 'desc1', 'auth1', 'favor1', 'filecover1', 'fileName1'),
-// 		new Book('title2', 'desc2', 'auth2', 'favor2', 'filecover2', 'fileName2'),
-// 	],
-// };
-
 // Получить все книги
-router.get('/', (req, res) => {
-	const { library } = stor
-	res.json(library)
+router.get('/', async (req, res) => {
+	try {
+		const books = await Book.find()
+		res.json(books)
+	} catch (e) {
+		console.log(e)
+		next()
+	}
 })
 
 // Получить книгу по ID
-router.get('/:id', (req, res, next) => {
-	const { library } = stor
+router.get('/:id', async (req, res, next) => {
 	const { id } = req.params
-	const idx = library.findIndex(el => el.id === id)
-	if (idx !== -1) {
-		res.json(library[idx])
-	} else {
+	try {
+		const book = await Book.findById(id)
+		res.json(book)
+	} catch (e) {
+		console.log(e)
 		next()
 	}
 })
 
 // Создать и загрузить книгу
-router.post('/', fileMulter.single('file_book'), (req, res) => {
-	const { library } = stor
+router.post('/', fileMulter.single('file_book'), async (req, res) => {
 	const { title, desc, authors, favorite, fileCover, fileName} = req.body
-	const fileBook = req.file.filename
-
-	const newBook = new Book(title, desc, authors, favorite, fileCover, fileName, fileBook)
-	library.push(newBook)
-
-	res.status(201)
-	res.json(newBook)
+	//const fileBook = req.file.filename
+	const newBook = new Book({
+		title: title,
+		desc: desc,
+		authors: authors,
+		favorite: favorite,
+		fileCover: fileCover,
+		fileName: fileName
+	})
+	try {
+		const id = await newBook.save()
+		console.log(id)
+		// .then(savedDoc => {
+		// 	savedDoc === doc; // true
+		// })
+		res.json(id)
+	} catch (e) {
+		console.log(e)
+	}
 })
 
 // Редактировать книгу по ID
-router.put('/:id', (req, res, next) => {
-	const { library } = stor
-	const { body } = req
+router.put('/:id', async (req, res, next) => {
 	const { id } = req.params
-	const idx = library.findIndex(el => el.id === id)
-	if (idx !== -1) {
-		library[idx] = {
-			...library[idx],
-			...body
-		}
-		res.json(library[idx])
-	} else {
+	try {
+		await Book.findByIdAndUpdate(id, req.body)
+		res.redirect('/api/books')
+	} catch (e) {
+		console.log(e)
 		next()
 	}
 })
 
 // Удалить кнлигу по ID
-router.delete('/:id', (req, res, next) => {
-	const { library } = stor
+router.delete('/:id', async (req, res, next) => {
 	const { id } = req.params
-	const idx = library.findIndex(el => el.id === id)
-	if (idx !== -1) {
-		library.splice(idx, 1)
-		res.json(true)
-	} else {
+	try {
+		await Book.deleteOne({_id: id})
+		res.json('ок')
+	} catch (e) {
+		console.log(e)
 		next()
 	}
 })

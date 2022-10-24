@@ -1,21 +1,45 @@
+version: "3.7"
+
 services:
+  mongo:
+    image: mongo:4.2
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_SERVER: mongo
+    depends_on:
+      - mongo
+
   library:
     build: library/
     ports:
-      - 80:3000
+      - 81:3000
     environment:
       - PORT=3000
-      - NODE_ENV=production
+      - DB_HOST=mongodb://mongo:27017/
+      - DBUSERNAME=root
+      - DB_PASSWORD=example
+      - DB_NAME=books_database
+      # - NODE_ENV=production
     depends_on:
       - counter
-    command: npm run start
   counter:
     build: counter/
     ports:
-      - 81:3001
+      - 82:3001
     environment:
       - PORT=3001
-      - NODE_ENV=production
+      # - NODE_ENV=production
     volumes:
       - ./counter/data:/app/data
-    command: npm run start

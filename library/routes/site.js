@@ -44,25 +44,25 @@ router.get('/:id', (req, res, next) => {
 
 	const idx = library.findIndex(el => el.id === id)
 	if (idx !== -1) {
-		async function f() {
-			const r = http.request(optionsInc, (res) => {})
-			r.end()
-		}
+		const r = http.request(optionsInc, (res) => {})
+		r.end()
 
-		f().then(http.get(options, (response) => {
+		setTimeout(() => {
+			http.get(options, (response) => {
 			let str = ''
 			response.on('data', (chunk) => {
 				str += chunk
-			});
+			})
 			response.on('end', () => {
-				counter = JSON.parse(str).count || 0
+				counter = JSON.parse(str).count ?? 0
 				res.render('pages/view', {
 					title: title,
 					lib: library[idx],
-					counter: ++counter,
+					counter: counter,
 				})
 			})
-		}))
+		})
+		}, 100)
 	} else {
 		next()
 	}
