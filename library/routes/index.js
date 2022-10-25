@@ -5,6 +5,7 @@ router.get('/', (req, res) => {
 	const title = 'Главная страница'
 	res.render('index', {
 		title: title,
+		user: req.user
 	})
 })
 

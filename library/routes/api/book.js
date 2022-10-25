@@ -42,9 +42,6 @@ router.post('/', fileMulter.single('file_book'), async (req, res) => {
 	try {
 		const id = await newBook.save()
 		console.log(id)
-		// .then(savedDoc => {
-		// 	savedDoc === doc; // true
-		// })
 		res.json(id)
 	} catch (e) {
 		console.log(e)
