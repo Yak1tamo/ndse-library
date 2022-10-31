@@ -3,13 +3,16 @@ const mongoose = require('mongoose')
 const session = require('express-session')
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
+const socketIO = require('socket.io')
+const http = require("http")
 
 const User = require('./models/user')
+const BookDb = require('./models/bookdb')
 const error404 = require('./middleware/err-404')
-const userApi = require('./routes/api/user')
 const index = require('./routes/index')
-const bookApi = require('./routes/api/book')
 const books = require('./routes/site')
+const userApi = require('./routes/api/user')
+const bookApi = require('./routes/api/book')
 
 const verify = (username, password, done) => {
 	User.findOne({username: username}, (err, user) => {
@@ -40,6 +43,9 @@ passport.deserializeUser( (id, cb) => {
 })
 
 const app = express()
+const server = http.Server(app)
+const io = socketIO(server)
+
 app.use('/public', express.static(__dirname+'/public'))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
@@ -55,6 +61,30 @@ app.use('/api/books', bookApi)
 app.use('/books', books)
 app.use(error404)
 
+io.on('connection', (socket) => {
+	const {id} = socket
+	console.log(`Connection ${id}`)
+
+	const {roomName} = socket.handshake.query
+	console.log(`Room: ${roomName}`)
+	socket.join(roomName)
+	socket.on('message-to-room', async (msg) => {
+	try {
+		await BookDb.findByIdAndUpdate(roomName, { $push: { comments: {username: msg.username, body: msg.body} } })
+	} catch (e) {
+		console.log(e)
+	}
+		msg.type = `room: ${roomName}`
+		msg.date = new Intl.DateTimeFormat().format(new Date)
+		socket.to(roomName).emit('message-to-room', msg)
+		socket.emit('message-to-room', msg)
+	})
+
+	socket.on('disconnect', () => {
+		console.log(`Disconnect: ${id}`)
+	})
+})
+
 async function start(PORT, DB_HOST) {
 	try {
 		await mongoose.connect(DB_HOST, {
@@ -62,7 +92,7 @@ async function start(PORT, DB_HOST) {
 			pass: process.env.DB_PASSWORD || 'example',
 			dbName: process.env.DB_NAME || 'books_database'
 		})
-		app.listen(PORT, () => {
+		server.listen(PORT, () => {
 			console.log(`PORT = ${PORT}, DB_HOST = ${DB_HOST}`)
 		})
 	} catch(e) {

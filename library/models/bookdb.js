@@ -24,7 +24,21 @@ const books = new Schema({
 	fileName: {
 		type: String,
 		required: true
-	}
+	},
+	fileBook: {
+		type: String,
+		required: false
+	},
+	comments: [
+		{
+			username: String,
+			body: String,
+			date: {
+				type: String,
+				default: new Intl.DateTimeFormat().format(new Date)
+		}
+		}
+	]
 })
 
 module.exports = model('Books', books)

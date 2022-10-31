@@ -1,35 +1,101 @@
 const express = require('express')
-const router = express.Router()
-const Book = require('../models/book')
-const fileMulter = require('../middleware/file')
 const path = require('path')
-const { title } = require('process')
 const http = require('http')
+const router = express.Router()
 
-const stor = {
-	library: [
-		new Book('title1', 'desc1', 'auth1', 'favor1', 'filecover1', 'fileName1'),
-		new Book('title2', 'desc2', 'auth2', 'favor2', 'filecover2', 'fileName2'),
-	],
-};
+const BookDb = require('../models/bookdb')
+const fileMulter = require('../middleware/file')
 
 // Просмотр списка всех книг
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
 	const title = 'Library'
-	const { library } = stor
-	res.render('pages/index', {
+	try {
+		const books = await BookDb.find()
+		res.render('pages/index', {
+			title: title,
+			lib: books,
+		})
+	} catch (e) {
+		console.log(e)
+		next()
+	}
+})
+
+// Создание книги
+router.get('/create', (req, res) => {
+	const title = 'Create book'
+	const b = new BookDb({})
+	res.render('pages/create', {
 		title: title,
-		lib: library,
+		book: {}
 	})
 })
 
-// Информация по конкретной книге
-router.get('/:id', (req, res, next) => {
-	const title = 'Book'
-	const { library } = stor
-	const { id } = req.params
-	let counter
+router.post('/create', fileMulter.single('fileBook'), async (req, res) => {
+	// const fileBook = req.file.filename
+	const { body } = req
+	const fileBook = req.file ? req.file.path : ''
+	const newBook = new BookDb({
+		...body, fileBook
+	})
+	try {
+		await newBook.save()
+		res.status(201)
+		res.redirect('/books')
+	} catch (e) {
+		console.log(e)
+	}
+})
 
+// Редактирование книги
+router.get('/update/:id', async (req, res, next) => {
+	const title = 'Update'
+	const { id } = req.params
+	try {
+		const book = await BookDb.findById(id)
+		if(book) {
+			res.render('pages/update', {
+				title: title,
+				book: book
+			})
+		} else {
+			next()
+		}
+	} catch (e) {
+		console.log(e)
+		next()
+	}
+})
+
+router.post('/update/:id', fileMulter.single('fileBook'), async (req, res, next) => {
+	const { id } = req.params
+	const { body } = req
+	const fileBook = req.file ? req.file.path : ''
+	try {
+		await BookDb.findByIdAndUpdate(id, {...body, fileBook})
+		res.redirect('/books')
+	} catch (e) {
+		console.log(e)
+		next()
+	}
+})
+
+// Удалить кнлигу по ID
+router.post('/delete/:id', async (req, res, next) => {
+	const { id } = req.params
+	try {
+		await BookDb.deleteOne({_id: id})
+		res.redirect('/books')
+	} catch (e) {
+		console.log(e)
+		next()
+	}
+})
+
+// Информация по конкретной книге
+router.get('/:id', async (req, res, next) => {
+	const title = 'Book'
+	const { id } = req.params
 	const optionsInc = {
 		host: 'counter',
 		path: `/counter/${id}/incr`,
@@ -42,95 +108,44 @@ router.get('/:id', (req, res, next) => {
 		port: 3001,
 	}
 
-	const idx = library.findIndex(el => el.id === id)
-	if (idx !== -1) {
-		const r = http.request(optionsInc, (res) => {})
-		r.end()
-
-		setTimeout(() => {
-			http.get(options, (response) => {
-			let str = ''
-			response.on('data', (chunk) => {
-				str += chunk
-			})
-			response.on('end', () => {
-				counter = JSON.parse(str).count ?? 0
-				res.render('pages/view', {
-					title: title,
-					lib: library[idx],
-					counter: counter,
+	try {
+		const book = await BookDb.findById(id)
+		if (book) {
+			const r = http.request(optionsInc, (res) => {})
+			r.end()
+			setTimeout(() => {
+				http.get(options, (response) => {
+				let str = ''
+				response.on('data', (chunk) => {
+					str += chunk
+				})
+				response.on('end', () => {
+					let counter = JSON.parse(str).count ?? 0
+					res.render('pages/view', {
+						title: title,
+						lib: book,
+						counter: counter,
+					})
 				})
 			})
-		})
-		}, 100)
-	} else {
-		next()
-	}
-})
-
-// Создание книги
-router.get('/create', (req, res) => {
-	const title = 'Create'
-	res.render('pages/create', {
-		title: title,
-		book: {},
-	})
-})
-
-router.post('/create', fileMulter.single('fileBook'), (req, res) => {
-	const { library } = stor
-	const { title, desc, authors, favorite, fileCover, fileName} = req.body
-	const fileBook = req.file ? req.file.path : ''
-	const newBook = new Book(title, desc, authors, favorite, fileCover, fileName, fileBook)
-	library.push(newBook)
-
-	res.status(201)
-	res.redirect('/books')
-})
-
-// Редактирование книги
-router.get('/update/:id', (req, res, next) => {
-	const title = 'Update'
-	const { library } = stor
-	const { id } = req.params
-	const idx = library.findIndex(el => el.id === id)
-	if (idx !== -1) {
-		res.render('pages/update', {
-			title: title,
-			book: library[idx],
-		})
-	} else {
-		next()
-	}
-})
-
-router.post('/update/:id', fileMulter.single('fileBook'), (req, res, next) => {
-	const { library } = stor
-	const { body } = req
-	const fileBook = req.file ? req.file.path : ''
-	const { id } = req.params
-	const idx = library.findIndex(el => el.id === id)
-	if (idx !== -1) {
-		library[idx] = {
-			...library[idx],
-			...body,
-			fileBook
+			}, 100)
+		} else {
+			next()
 		}
-		res.redirect('/books')
-	} else {
+	} catch (e) {
+		console.log(e)
 		next()
 	}
 })
 
-// Удалить кнлигу по ID
-router.post('/delete/:id', (req, res, next) => {
-	const { library } = stor
+router.post('/:id', async (req, res, next) => {
 	const { id } = req.params
-	const idx = library.findIndex(el => el.id === id)
-	if (idx !== -1) {
-		library.splice(idx, 1)
-		res.redirect('/books')
-	} else {
+	const { username, body } = req.body
+	try {
+		await BookDb.findByIdAndUpdate(id, { $push: { comments: {username: username, body: body} } })
+		// res.redirect(`/books/${id}`)
+	} catch (e) {
+		console.log(e)
 		next()
 	}
 })

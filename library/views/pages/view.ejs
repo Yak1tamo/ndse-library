@@ -36,4 +36,84 @@
 	</table>
 	<p>Всего просмотров: <%= counter %></p>
 
+	<div class="row">
+		<div class="col-4">
+				<div id="list" class="list-group">
+						<% lib.comments.map((el) => {  %>
+								<div>
+										<b><%= el.username %>:</b>
+										<div><%= el.body %></div>
+										<small><%= el.date %></small>
+								</div>
+								<br>
+						<% }) %>
+				</div>
+		</div>
+</div>
+<form action="/books/<%= lib.id %>" method="POST">
+		<div class="form-group mt-5">
+				<label for="username">username</label>
+				<input
+								placeholder="username"
+								type="text"
+								id="username"
+								class="form-control"
+								name="username"
+				>
+		</div>
+		<div class="form-group">
+				<label for="body">body</label>
+				<textarea
+								placeholder="message"
+								class="form-control"
+								id="body"
+								name="body"
+				></textarea>
+		</div>
+
+		<button type="button" id="send-room" class="btn btn-primary">Комментировать</button>
+</form>
+
+	<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"
+		integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k"
+		crossorigin="anonymous"></script>
+	<script src="/socket.io/socket.io.js"> </script>
+
+	<script>
+	const roomName = location.pathname.split('/').pop()
+	const socket = io.connect('/', {query: `roomName=${roomName}`})
+	const boxList = document.querySelector('#list')
+	const inputUserName = document.querySelector('#username')
+	const inputBody = document.querySelector('#body')
+	const sendRoom = document.querySelector('#send-room')
+	const getTmp = (msg) => {
+		return `
+		<div class="row">
+		<div class="col-4">
+				<div id="list" class="list-group">
+						<div>
+										<b>${msg.username}:</b>
+										<div>${msg.body}</div>
+										<small>${msg.date}</small>
+								</div>
+								<br>
+				</div>
+		</div>
+		</div>`;
+		};
+
+	socket.on('message-to-room', (msg) => {
+		const div = getTmp(msg)
+		boxList.insertAdjacentHTML('beforeend', div)
+		inputUserName.value = ''
+		inputBody.value = ''
+})
+sendRoom.addEventListener('click', () => {
+	socket.emit('message-to-room', {
+		username: inputUserName.value,
+		body: inputBody.value,
+	})
+})
+	</script>
+
 <%- include('../port/layout-end') %>
