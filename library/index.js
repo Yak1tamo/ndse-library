@@ -14,15 +14,20 @@ const books = require('./routes/site')
 const userApi = require('./routes/api/user')
 const bookApi = require('./routes/api/book')
 
+const PORT = process.env.PORT || 3000
+const DB_HOST = process.env.DB_HOST || 'mongodb://mongo:27017/'
+
+const app = express()
+const server = http.Server(app)
+const io = socketIO(server)
+
 const verify = (username, password, done) => {
 	User.findOne({username: username}, (err, user) => {
 		if (err) {return done(err)}
 		if (!user) { return done(null, false) }
-
 		if( !(password === user.password) ) {
 			return done(null, false)
 		}
-
 		return done(null, user)
 	})
 }
@@ -31,7 +36,6 @@ const options = {
 	passwordField: "password",
 }
 passport.use('local', new LocalStrategy(options, verify))
-
 passport.serializeUser((user, cb) => {
 	cb(null, user.id)
 })
@@ -41,10 +45,6 @@ passport.deserializeUser( (id, cb) => {
 		cb(null, user)
 	})
 })
-
-const app = express()
-const server = http.Server(app)
-const io = socketIO(server)
 
 app.use('/public', express.static(__dirname+'/public'))
 app.use(express.json())
@@ -100,6 +100,4 @@ async function start(PORT, DB_HOST) {
 	}
 }
 
-const PORT = process.env.PORT || 3000
-const DB_HOST = process.env.DB_HOST || 'mongodb://mongo:27017/'
 start(PORT, DB_HOST)

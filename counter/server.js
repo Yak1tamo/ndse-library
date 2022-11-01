@@ -1,32 +1,20 @@
 const fs = require('fs')
 const path = require('path')
 const express = require('express')
-const { json } = require('express')
 const app = express()
-
 const PORT = process.env.PORT || 3000
-const stor = {}
 
 app.post('/counter/:bookId/incr', (req, res) => {
 	const { bookId } = req.params
-	fs.readFile(
+	let book = fs.readFileSync(
 		path.join(__dirname, 'data', 'data.json'),
-		'utf-8',
-		(err, content) => {
-			if(err) {
-				console.log(err)
-			} else{
-				const book = JSON.parse(content)
-				book[bookId] = bookId in book ? book[bookId] + 1 : 1
-				fs.writeFile(
-					path.join(__dirname, 'data', 'data.json'),
-					JSON.stringify(book),
-					(err) => {
-						if(err) throw err
-					}
-				)
-			}
-		}
+		'utf-8'
+	)
+	book = JSON.parse(book)
+	book[bookId] = bookId in book ? book[bookId] + 1 : 1
+	fs.writeFileSync(
+		path.join(__dirname, 'data', 'data.json'),
+		JSON.stringify(book)
 	)
 })
 

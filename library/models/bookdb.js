@@ -36,7 +36,7 @@ const books = new Schema({
 			date: {
 				type: String,
 				default: new Intl.DateTimeFormat().format(new Date)
-		}
+			}
 		}
 	]
 })

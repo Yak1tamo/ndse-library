@@ -50,19 +50,13 @@
 				</div>
 		</div>
 </div>
+	<% if (username === 'Гость') { %>
+	<p>Пожалуйста, <a href="/api/user/login"> авторизуйтесь </a></p>
+	<% } %>
 <form action="/books/<%= lib.id %>" method="POST">
-		<div class="form-group mt-5">
-				<label for="username">username</label>
-				<input
-								placeholder="username"
-								type="text"
-								id="username"
-								class="form-control"
-								name="username"
-				>
-		</div>
+		<input id="username" type="hidden" name="username" value="<%= username %>">
 		<div class="form-group">
-				<label for="body">body</label>
+				<label for="body">message</label>
 				<textarea
 								placeholder="message"
 								class="form-control"
@@ -83,7 +77,7 @@
 	const roomName = location.pathname.split('/').pop()
 	const socket = io.connect('/', {query: `roomName=${roomName}`})
 	const boxList = document.querySelector('#list')
-	const inputUserName = document.querySelector('#username')
+	const inputUserName = document.querySelector('#username').value
 	const inputBody = document.querySelector('#body')
 	const sendRoom = document.querySelector('#send-room')
 	const getTmp = (msg) => {
@@ -101,16 +95,14 @@
 		</div>
 		</div>`;
 		};
-
 	socket.on('message-to-room', (msg) => {
 		const div = getTmp(msg)
 		boxList.insertAdjacentHTML('beforeend', div)
-		inputUserName.value = ''
 		inputBody.value = ''
 })
 sendRoom.addEventListener('click', () => {
 	socket.emit('message-to-room', {
-		username: inputUserName.value,
+		username: inputUserName,
 		body: inputBody.value,
 	})
 })

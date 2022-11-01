@@ -32,7 +32,6 @@ router.get('/create', (req, res) => {
 })
 
 router.post('/create', fileMulter.single('fileBook'), async (req, res) => {
-	// const fileBook = req.file.filename
 	const { body } = req
 	const fileBook = req.file ? req.file.path : ''
 	const newBook = new BookDb({
@@ -113,7 +112,6 @@ router.get('/:id', async (req, res, next) => {
 		if (book) {
 			const r = http.request(optionsInc, (res) => {})
 			r.end()
-			setTimeout(() => {
 				http.get(options, (response) => {
 				let str = ''
 				response.on('data', (chunk) => {
@@ -125,10 +123,10 @@ router.get('/:id', async (req, res, next) => {
 						title: title,
 						lib: book,
 						counter: counter,
+						username: req.user?.username ?? 'Гость'
 					})
 				})
 			})
-			}, 100)
 		} else {
 			next()
 		}
@@ -143,7 +141,7 @@ router.post('/:id', async (req, res, next) => {
 	const { username, body } = req.body
 	try {
 		await BookDb.findByIdAndUpdate(id, { $push: { comments: {username: username, body: body} } })
-		// res.redirect(`/books/${id}`)
+		res.redirect(`/books/${id}`)
 	} catch (e) {
 		console.log(e)
 		next()

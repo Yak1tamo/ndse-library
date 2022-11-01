@@ -1,7 +1,5 @@
 const express = require('express')
-const session = require('express-session')
 const passport = require('passport')
-const LocalStrategy = require('passport-local')
 const router = express.Router()
 const User = require('../../models/user')
 
@@ -50,9 +48,9 @@ router.post('/signup', async (req, res, next) => {
 // Разлогиниться
 router.get('/logout', (req, res, next) => {
 	req.logout(function(err) {
-    if (err) { return next(err) }
-    res.redirect('/')
-  })
+		if (err) { return next(err) }
+		res.redirect('/')
+	})
 })
 
 module.exports = router
