@@ -1,28 +1,35 @@
-const express = require('express')
-const mongoose = require('mongoose')
-const session = require('express-session')
-const passport = require('passport')
-const LocalStrategy = require('passport-local').Strategy
-const socketIO = require('socket.io')
-const http = require("http")
+import express from 'express'
+import mongoose from 'mongoose'
+import session from 'express-session'
+import passport from 'passport'
+import { Strategy as LocalStrategy, VerifyFunction } from 'passport-local'
+import { Server, Socket } from 'socket.io'
+import { createServer } from 'http'
 
-const User = require('./models/user')
-const BookDb = require('./models/bookdb')
-const error404 = require('./middleware/err-404')
-const index = require('./routes/index')
-const books = require('./routes/site')
-const userApi = require('./routes/api/user')
-const bookApi = require('./routes/api/book')
+import { fileURLToPath } from 'url'
+import path from 'path'
+import { dirname } from 'path'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+import { IUser } from './interfaces/IUser.js'
+import { User } from './models/user.js'
+import { BookDb } from './models/bookdb.js'
+import { error404 } from './middleware/err-404.js'
+import { index } from './routes/index.js'
+import { books } from './routes/site.js'
+import { userApi } from './routes/api/user.js'
+import { bookApi } from './routes/api/book.js'
 
 const PORT = process.env.PORT || 3000
 const DB_HOST = process.env.DB_HOST || 'mongodb://mongo:27017/'
 
 const app = express()
-const server = http.Server(app)
-const io = socketIO(server)
+const server = createServer(app)
+const io = new Server(server)
 
-const verify = (username, password, done) => {
-	User.findOne({username: username}, (err, user) => {
+const verify: VerifyFunction = (username, password, done) => {
+	User.findOne({username: username}, (err: Error, user: IUser) => {
 		if (err) {return done(err)}
 		if (!user) { return done(null, false) }
 		if( !(password === user.password) ) {
@@ -36,22 +43,23 @@ const options = {
 	passwordField: "password",
 }
 passport.use('local', new LocalStrategy(options, verify))
-passport.serializeUser((user, cb) => {
+passport.serializeUser((user: any, cb) => {
 	cb(null, user.id)
 })
 passport.deserializeUser( (id, cb) => {
-	User.findById(id, (err, user) => {
+	User.findById(id, (err: Error, user: IUser) => {
 		if (err) { return cb(err) }
 		cb(null, user)
 	})
 })
 
-app.use('/public', express.static(__dirname+'/public'))
+app.use(express.static(path.join(__dirname + '../public')))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.set("view engine", "ejs")
+app.set('views', 'views')
 
-app.use(session({ secret: 'SECRET'}));
+app.use(session({ secret: 'SECRET'}))
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -61,11 +69,12 @@ app.use('/api/books', bookApi)
 app.use('/books', books)
 app.use(error404)
 
-io.on('connection', (socket) => {
+io.on('connection', (socket: Socket) => {
 	const {id} = socket
 	console.log(`Connection ${id}`)
 
-	const {roomName} = socket.handshake.query
+	let { roomName } = socket.handshake.query
+	roomName = roomName ?? ''
 	console.log(`Room: ${roomName}`)
 	socket.join(roomName)
 	socket.on('message-to-room', async (msg) => {
@@ -76,7 +85,7 @@ io.on('connection', (socket) => {
 	}
 		msg.type = `room: ${roomName}`
 		msg.date = new Intl.DateTimeFormat().format(new Date)
-		socket.to(roomName).emit('message-to-room', msg)
+		socket.to(roomName!).emit('message-to-room', msg)
 		socket.emit('message-to-room', msg)
 	})
 
@@ -85,10 +94,10 @@ io.on('connection', (socket) => {
 	})
 })
 
-async function start(PORT, DB_HOST) {
+async function start(PORT: any, DB_HOST: string) {
 	try {
 		await mongoose.connect(DB_HOST, {
-			user: process.env.DBUSERNAME || 'root',
+			user: process.env.DB_USERNAME || 'root',
 			pass: process.env.DB_PASSWORD || 'example',
 			dbName: process.env.DB_NAME || 'books_database'
 		})

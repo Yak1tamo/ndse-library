@@ -28,7 +28,7 @@ services:
     environment:
       - PORT=3000
       - DB_HOST=mongodb://mongo:27017/
-      - DBUSERNAME=root
+      - DB_USERNAME=root
       - DB_PASSWORD=example
       - DB_NAME=books_database
       # - NODE_ENV=production

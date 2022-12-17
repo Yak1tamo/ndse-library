@@ -3,3 +3,4 @@ doc/**/*.txt
 .env
 config.js
 *.pdf
+dist

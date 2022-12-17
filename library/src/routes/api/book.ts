@@ -1,11 +1,11 @@
-const express = require('express')
-const router = express.Router()
-const BookDb = require('../../models/bookdb')
-const fileMulter = require('../../middleware/file')
-const path = require('path')
+// import  path from 'path'
+import { Router } from 'express'
+import { BookDb } from '../../models/bookdb.js'
+import { fileMulter } from '../../middleware/file.js'
+const bookApi = Router()
 
 // Получить все книги
-router.get('/', async (req, res) => {
+bookApi.get('/', async (req, res, next) => {
 	try {
 		const books = await BookDb.find()
 		res.json(books)
@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
 })
 
 // Получить книгу по ID
-router.get('/:id', async (req, res, next) => {
+bookApi.get('/:id', async (req, res, next) => {
 	const { id } = req.params
 	try {
 		const book = await BookDb.findById(id)
@@ -28,7 +28,7 @@ router.get('/:id', async (req, res, next) => {
 })
 
 // Создать и загрузить книгу
-router.post('/', fileMulter.single('fileBook'), async (req, res) => {
+bookApi.post('/', fileMulter.single('fileBook'), async (req, res) => {
 	const { body } = req
 	const fileBook = req.file ? req.file.path : ''
 	const newBook = new BookDb({...body, fileBook})
@@ -42,7 +42,7 @@ router.post('/', fileMulter.single('fileBook'), async (req, res) => {
 })
 
 // Редактировать книгу по ID
-router.put('/:id', fileMulter.single('fileBook'), async (req, res, next) => {
+bookApi.put('/:id', fileMulter.single('fileBook'), async (req, res, next) => {
 	const { id } = req.params
 	const { body } = req
 	const fileBook = req.file ? req.file.path : ''
@@ -56,7 +56,7 @@ router.put('/:id', fileMulter.single('fileBook'), async (req, res, next) => {
 })
 
 // Удалить кнлигу по ID
-router.delete('/:id', async (req, res, next) => {
+bookApi.delete('/:id', async (req, res, next) => {
 	const { id } = req.params
 	try {
 		await BookDb.deleteOne({_id: id})
@@ -68,15 +68,15 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 // Скачать книгу
-router.get('/:id/download', async (req, res) => {
-	const { id } = req.params
-	try {
-		const book = await BookDb.findById(id)
-		res.download(path.join('/app', book.fileBook), book.fileName)
-	} catch (e) {
-		console.log(e)
-		next()
-	}
-})
+// bookApi.get('/:id/download', async (req, res, next) => {
+// 	const { id } = req.params
+// 	try {
+// 		const book = await BookDb.findById(id)
+// 		res.download(path.join('/app', book.fileBook), book.fileName)
+// 	} catch (e) {
+// 		console.log(e)
+// 		next()
+// 	}
+// })
 
-module.exports = router
+export { bookApi }

@@ -1,15 +1,16 @@
-const express = require('express')
-const passport = require('passport')
-const router = express.Router()
-const User = require('../../models/user')
+import passport from 'passport'
+import { Router } from 'express'
+import { User } from '../../models/user.js'
+
+const userApi = Router()
 
 // Страница с формой входа / регистрации
-router.get('/login', (req, res) => {
+userApi.get('/login', (req, res) => {
 	res.render('user/login')
 })
 
 // Страница профиля
-router.get('/me', (req, res, next) => {
+userApi.get('/me', (req, res, next) => {
 		if (!req.isAuthenticated()) {
 			return res.redirect('/login')
 		}
@@ -21,7 +22,7 @@ router.get('/me', (req, res, next) => {
 )
 
 // Залогиниться
-router.post('/login',
+userApi.post('/login',
 	passport.authenticate('local', { failureRedirect: '/api/user/login' }),
 	(req, res) => {
 		console.log("req.user: ", req.user)
@@ -29,7 +30,7 @@ router.post('/login',
 })
 
 // Зарегистрироваться
-router.post('/signup', async (req, res, next) => {
+userApi.post('/signup', async (req, res, next) => {
 	const user = new User({
 		username: req.body.username,
 		password: req.body.password
@@ -46,11 +47,11 @@ router.post('/signup', async (req, res, next) => {
 })
 
 // Разлогиниться
-router.get('/logout', (req, res, next) => {
+userApi.get('/logout', (req, res, next) => {
 	req.logout(function(err) {
 		if (err) { return next(err) }
 		res.redirect('/')
 	})
 })
 
-module.exports = router
+export { userApi }

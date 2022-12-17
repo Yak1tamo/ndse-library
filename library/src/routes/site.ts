@@ -1,13 +1,12 @@
-const express = require('express')
-const path = require('path')
-const http = require('http')
-const router = express.Router()
+import http from 'http'
+import { Router } from 'express'
+import { BookDb } from '../models/bookdb.js'
+import { fileMulter } from '../middleware/file.js'
 
-const BookDb = require('../models/bookdb')
-const fileMulter = require('../middleware/file')
+const books = Router()
 
 // Просмотр списка всех книг
-router.get('/', async (req, res) => {
+books.get('/', async (req, res, next) => {
 	const title = 'Library'
 	try {
 		const books = await BookDb.find()
@@ -22,7 +21,7 @@ router.get('/', async (req, res) => {
 })
 
 // Создание книги
-router.get('/create', (req, res) => {
+books.get('/create', (req, res) => {
 	const title = 'Create book'
 	const b = new BookDb({})
 	res.render('pages/create', {
@@ -31,7 +30,7 @@ router.get('/create', (req, res) => {
 	})
 })
 
-router.post('/create', fileMulter.single('fileBook'), async (req, res) => {
+books.post('/create', fileMulter.single('fileBook'), async (req, res) => {
 	const { body } = req
 	const fileBook = req.file ? req.file.path : ''
 	const newBook = new BookDb({
@@ -47,7 +46,7 @@ router.post('/create', fileMulter.single('fileBook'), async (req, res) => {
 })
 
 // Редактирование книги
-router.get('/update/:id', async (req, res, next) => {
+books.get('/update/:id', async (req, res, next) => {
 	const title = 'Update'
 	const { id } = req.params
 	try {
@@ -66,7 +65,7 @@ router.get('/update/:id', async (req, res, next) => {
 	}
 })
 
-router.post('/update/:id', fileMulter.single('fileBook'), async (req, res, next) => {
+books.post('/update/:id', fileMulter.single('fileBook'), async (req, res, next) => {
 	const { id } = req.params
 	const { body } = req
 	const fileBook = req.file ? req.file.path : ''
@@ -80,7 +79,7 @@ router.post('/update/:id', fileMulter.single('fileBook'), async (req, res, next)
 })
 
 // Удалить кнлигу по ID
-router.post('/delete/:id', async (req, res, next) => {
+books.post('/delete/:id', async (req, res, next) => {
 	const { id } = req.params
 	try {
 		await BookDb.deleteOne({_id: id})
@@ -92,7 +91,7 @@ router.post('/delete/:id', async (req, res, next) => {
 })
 
 // Информация по конкретной книге
-router.get('/:id', async (req, res, next) => {
+books.get('/:id', async (req, res, next) => {
 	const title = 'Book'
 	const { id } = req.params
 	const optionsInc = {
@@ -119,11 +118,12 @@ router.get('/:id', async (req, res, next) => {
 				})
 				response.on('end', () => {
 					let counter = JSON.parse(str).count ?? 0
+					// let username = req.user?.username ?? 'Гость'
 					res.render('pages/view', {
 						title: title,
 						lib: book,
 						counter: counter,
-						username: req.user?.username ?? 'Гость'
+						username: 'Гость'
 					})
 				})
 			})
@@ -136,7 +136,7 @@ router.get('/:id', async (req, res, next) => {
 	}
 })
 
-router.post('/:id', async (req, res, next) => {
+books.post('/:id', async (req, res, next) => {
 	const { id } = req.params
 	const { username, body } = req.body
 	try {
@@ -148,4 +148,4 @@ router.post('/:id', async (req, res, next) => {
 	}
 })
 
-module.exports = router
+export { books }

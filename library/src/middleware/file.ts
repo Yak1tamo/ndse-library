@@ -1,4 +1,4 @@
-const multer = require('multer')
+import multer from 'multer'
 
 const storage = multer.diskStorage({
 	destination(req, file, cb){
@@ -8,5 +8,4 @@ const storage = multer.diskStorage({
 		cb(null, `${Date.now()}-${file.originalname}`)
 	}
 })
-
-module.exports = multer({storage})
+export const fileMulter = multer({storage})
