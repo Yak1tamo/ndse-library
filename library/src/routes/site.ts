@@ -82,6 +82,7 @@ books.post('/update/:id', fileMulter.single('fileBook'), async (req, res) => {
 	const { body } = req
 	const fileBook = req.file ? req.file.path : ''
 	await repo.updateBook(id, {...body, fileBook})
+	res.redirect('/books')
 	// try {
 	// 	await BookDb.findByIdAndUpdate(id, {...body, fileBook})
 	// 	res.redirect('/books')
