@@ -2,7 +2,25 @@
 Get http://localhost:81/
 
 ###
-Get http://localhost:81/api/user/login
+POST http://localhost:81/api/user/login
+content-type: application/json
+
+{
+  "username": "pptfsmr",
+  "password": "st54687ice"
+}
+
+###
+POST http://localhost:81/api/singup
+content-type: application/json
+
+{
+  "username": "pptfsmr",
+  "password": "st54687ice"
+}
+
+###
+Get http://localhost:81/api/user/logout
 
 ###
 
@@ -11,3 +29,42 @@ Get http://localhost:81/api/user/me
 ###
 
 Get http://localhost:81/books/create
+
+###
+POST http://localhost:81/api/singin
+content-type: application/json
+
+{
+  "email": "lsrawfpj@ld.ru",
+  "password": "awjarst54687ice"
+}
+
+###
+GET http://localhost:81/api/logout
+
+###
+GET http://localhost:81/api/books
+
+###
+PUT http://localhost:81/api/books/63702035cade70de5537f454
+content-type: application/json
+
+{
+  "title": "rast rstr trts",
+  "desc": " hdne hdne hdne he"
+}
+
+###
+GET http://localhost:81/api/books/63702035cade70de5537f454
+
+###
+PUT http://localhost:81/api/books/63702035cade70de5537f454
+content-type: application/json
+
+{
+  "title": "rast rstr trts",
+  "desc": " hdne hdne hdne he"
+}
+
+###
+DELETE http://localhost:81/api/books/63702035cade70de5537f454

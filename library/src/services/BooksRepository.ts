@@ -1,17 +1,47 @@
+import { injectable } from "inversify";
+import "reflect-metadata"
+import { BookDb } from '../models/bookdb.js'
+// import { IBook } from '../interfaces/IBook.js'
 
+@injectable()
 export class BooksRepository {
-	createBook() {
+	async createBook(newBook: any) {
+		try {
+			return await newBook.save()
+		} catch (e) {
+			console.log(e)
+		}
 	}
 
-	getBook(id: string): void {
+	async getBook(id: string) {
+		try {
+			return await BookDb.findById(id)
+		} catch (e) {
+			console.log(e)
+		}
 	}
 
-	getBooks() {
+	async getBooks() {
+		try {
+			return await BookDb.find()
+		} catch (e) {
+			console.log(e)
+		}
 	}
 
-	updateBook(id: string): void {
+	async updateBook(id: string, params: any): Promise<void> {
+		try {
+			await BookDb.findByIdAndUpdate(id, params)
+		} catch (e) {
+			console.log(e)
+		}
 	}
 
-	deleteBook(id: string): void {
+	async deleteBook(id: string): Promise<void> {
+		try {
+			await BookDb.deleteOne({_id: id})
+		} catch (e) {
+			console.log(e)
+		}
 	}
 }

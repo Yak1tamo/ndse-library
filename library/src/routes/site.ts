@@ -2,22 +2,31 @@ import http from 'http'
 import { Router } from 'express'
 import { BookDb } from '../models/bookdb.js'
 import { fileMulter } from '../middleware/file.js'
+import { container } from '../inversify.config.js'
+import { BooksRepository } from '../services/BooksRepository.js'
+import { IBook } from '../interfaces/IBook.js'
 
+const repo = container.get(BooksRepository)
 const books = Router()
 
 // Просмотр списка всех книг
-books.get('/', async (req, res, next) => {
+books.get('/', async (req, res) => {
 	const title = 'Library'
-	try {
-		const books = await BookDb.find()
-		res.render('pages/index', {
-			title: title,
-			lib: books,
-		})
-	} catch (e) {
-		console.log(e)
-		next()
-	}
+	const books = await repo.getBooks()
+	res.render('pages/index', {
+		title: title,
+		lib: books,
+	})
+	// try {
+	// 	const books = await BookDb.find()
+	// 	res.render('pages/index', {
+	// 		title: title,
+	// 		lib: books,
+	// 	})
+	// } catch (e) {
+	// 	console.log(e)
+	// 	next()
+	// }
 })
 
 // Создание книги
@@ -36,13 +45,16 @@ books.post('/create', fileMulter.single('fileBook'), async (req, res) => {
 	const newBook = new BookDb({
 		...body, fileBook
 	})
-	try {
-		await newBook.save()
-		res.status(201)
-		res.redirect('/books')
-	} catch (e) {
-		console.log(e)
-	}
+	await repo.createBook(newBook)
+	res.status(201)
+	res.redirect('/books')
+	// try {
+	// 	await newBook.save()
+	// 	res.status(201)
+	// 	res.redirect('/books')
+	// } catch (e) {
+	// 	console.log(e)
+	// }
 })
 
 // Редактирование книги
@@ -65,29 +77,32 @@ books.get('/update/:id', async (req, res, next) => {
 	}
 })
 
-books.post('/update/:id', fileMulter.single('fileBook'), async (req, res, next) => {
+books.post('/update/:id', fileMulter.single('fileBook'), async (req, res) => {
 	const { id } = req.params
 	const { body } = req
 	const fileBook = req.file ? req.file.path : ''
-	try {
-		await BookDb.findByIdAndUpdate(id, {...body, fileBook})
-		res.redirect('/books')
-	} catch (e) {
-		console.log(e)
-		next()
-	}
+	await repo.updateBook(id, {...body, fileBook})
+	// try {
+	// 	await BookDb.findByIdAndUpdate(id, {...body, fileBook})
+	// 	res.redirect('/books')
+	// } catch (e) {
+	// 	console.log(e)
+	// 	next()
+	// }
 })
 
 // Удалить кнлигу по ID
-books.post('/delete/:id', async (req, res, next) => {
+books.post('/delete/:id', async (req, res) => {
 	const { id } = req.params
-	try {
-		await BookDb.deleteOne({_id: id})
-		res.redirect('/books')
-	} catch (e) {
-		console.log(e)
-		next()
-	}
+	await repo.deleteBook(id)
+	res.redirect('/books')
+	// try {
+	// 	await BookDb.deleteOne({_id: id})
+	// 	res.redirect('/books')
+	// } catch (e) {
+	// 	console.log(e)
+	// 	next()
+	// }
 })
 
 // Информация по конкретной книге
@@ -107,7 +122,7 @@ books.get('/:id', async (req, res, next) => {
 	}
 
 	try {
-		const book = await BookDb.findById(id)
+		const book = await repo.getBook(id)
 		if (book) {
 			const r = http.request(optionsInc, (res) => {})
 			r.end()

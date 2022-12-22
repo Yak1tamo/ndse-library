@@ -1,10 +1,11 @@
 import multer from 'multer'
+import { Request } from "express"
 
 const storage = multer.diskStorage({
-	destination(req, file, cb){
+	destination(req: Request, file, cb){
 		cb(null, 'public/stor')
 	},
-	filename(req, file, cb) {
+	filename(req: Request, file, cb) {
 		cb(null, `${Date.now()}-${file.originalname}`)
 	}
 })
